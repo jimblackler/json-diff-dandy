@@ -25,7 +25,15 @@ describe('diffDandy.compare.test', () => {
     },
     {
       doc1: {a: [1]},
-      doc2: {a: [1,2]}
+      doc2: {a: []}
+    },
+    {
+      doc1: {a: [1]},
+      doc2: {a: [1, 2]}
+    },
+    {
+      doc1: {a: [1]},
+      doc2: {a: [1, 2, 3]}
     },
   ];
   tests.forEach(test =>
