@@ -11,14 +11,14 @@
     "test": "mocha"
   },
   "dependencies": {
-    "fast-json-patch": "^3.1.1",
-    "json8-patch": "^1.0.6"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",
     "@types/json8-patch": "^1.0.1",
     "@types/mocha": "^10.0.1",
     "chai": "^4.3.7",
+    "fast-json-patch": "^3.1.1",
+    "json8-patch": "^1.0.6",
     "mocha": "^10.2.0",
     "rfc6902": "^5.0.1",
     "ts-node": "^10.9.1"
