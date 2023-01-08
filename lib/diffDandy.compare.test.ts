@@ -42,8 +42,10 @@ describe('diffDandy.compare.test', () => {
         ];
         techniques.forEach(technique => {
           it(technique.name, () => {
+            console.log(technique.name);
             const patch = technique.getDiff(test.doc1, test.doc2);
             console.log(patch);
+            console.log();
           });
         });
       })
