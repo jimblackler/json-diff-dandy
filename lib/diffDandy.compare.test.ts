@@ -22,7 +22,11 @@ describe('diffDandy.compare.test', () => {
     {
       doc1: {a: 'b'},
       doc2: {}
-    }
+    },
+    {
+      doc1: {a: [1]},
+      doc2: {a: [1,2]}
+    },
   ];
   tests.forEach(test =>
       describe(`${JSON.stringify(test.doc1)} -> ${JSON.stringify(test.doc2)}`, () => {
