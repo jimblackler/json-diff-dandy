@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "./dist",
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "strict": true,
+    "esModuleInterop": true
+  },
+  "exclude": [
+    "dist",
+    "**/*.test.ts"
+  ]
+}

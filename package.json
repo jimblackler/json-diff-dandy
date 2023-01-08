@@ -1,0 +1,26 @@
+{
+  "name": "json-diff-dandy",
+  "description": "An RFC 6902 JSON Patch generator and tests that compare alternative patch libraries",
+  "version": "1.0.1",
+  "author": "jimblackler@gmail.com",
+  "license": "Apache-2.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "mocha"
+  },
+  "dependencies": {
+    "fast-json-patch": "^3.1.1",
+    "json8-patch": "^1.0.6"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.4",
+    "@types/json8-patch": "^1.0.1",
+    "@types/mocha": "^10.0.1",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "rfc6902": "^5.0.1",
+    "ts-node": "^10.9.1"
+  }
+}
