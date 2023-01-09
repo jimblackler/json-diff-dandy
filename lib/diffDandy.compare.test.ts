@@ -1,9 +1,9 @@
-import {compare, GetOperation} from "fast-json-patch";
+import {compare, GetOperation} from 'fast-json-patch';
 import diff from 'json-patch-gen';
 import {diff as diff1} from 'json8-patch';
-import {createPatch} from "rfc6902";
-import {assertNotNull} from "./check/null";
-import {JSONPatchOperation, JSONValue} from "./jsonTypes";
+import {createPatch} from 'rfc6902';
+import {assertNotNull} from './check/null';
+import {JSONPatchOperation, JSONValue} from './jsonTypes';
 
 const jiff = require('jiff');
 
