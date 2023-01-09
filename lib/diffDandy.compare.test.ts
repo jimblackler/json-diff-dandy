@@ -35,6 +35,10 @@ describe('diffDandy.compare.test', () => {
       doc1: {a: [1]},
       doc2: {a: [1, 2, 3]}
     },
+    {
+      doc1: [{a: 0, b: 0}],
+      doc2: [{a: 0, b: 1}]
+    }
   ];
   tests.forEach(test =>
       describe(`${JSON.stringify(test.doc1)} -> ${JSON.stringify(test.doc2)}`, () => {
@@ -56,7 +60,7 @@ describe('diffDandy.compare.test', () => {
           it(technique.name, () => {
             console.log(technique.name);
             const patch = technique.getDiff(test.doc1, test.doc2);
-            console.log(patch);
+            console.log(JSON.stringify(patch));
             console.log();
           });
         });
