@@ -9,7 +9,7 @@ const jiff = require('jiff');
 
 type Technique = {
   name: string;
-  getDiff: (a: JSONValue, b: JSONValue) => (JSONPatchOperation | GetOperation<JSONValue>)[];
+  getDiff: (a: JSONValue, b: JSONValue) => JSONPatchOperation[];
 }
 
 type Test = {
