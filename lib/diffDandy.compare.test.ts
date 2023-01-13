@@ -80,7 +80,8 @@ describe('diffDandy.compare.test', () => {
       doc2: ['D', 'B', 'D', 'A', 'A', 'D', 'D', 'A', 'A', 'D']
     }
   ];
-  tests.forEach(test =>
+  const tests2 = tests.map(test => [test, {doc1: test.doc2, doc2: test.doc1}]).flat();
+  tests2.forEach(test =>
       describe(`${JSON.stringify(test.doc1)} -> ${JSON.stringify(test.doc2)}`, () => {
         const techniques: Technique[] = [
           {name: 'JSON8', getDiff: (a, b) => diff1(a, b)},
