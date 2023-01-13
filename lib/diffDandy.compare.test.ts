@@ -1,5 +1,6 @@
-import {compare, GetOperation} from 'fast-json-patch';
-import diff from 'json-patch-gen';
+import {expect} from 'chai';
+import {applyPatch, compare} from 'fast-json-patch';
+import {default as diff0} from 'json-patch-gen';
 import {diff as diff1} from 'json8-patch';
 import {createPatch} from 'rfc6902';
 import {assertNotNull} from './check/null';
@@ -91,7 +92,7 @@ describe('diffDandy.compare.test', () => {
           {
             name: 'json-patch-gen', getDiff: (a, b) => {
               if (typeof a === 'object' && typeof b === 'object') {
-                return diff(a, b);
+                return diff0(a, b);
               }
               return null;
             }
@@ -99,9 +100,16 @@ describe('diffDandy.compare.test', () => {
         ];
         techniques.forEach(technique => {
           it(technique.name, () => {
-            console.log(technique.name);
             const patch = technique.getDiff(test.doc1, test.doc2);
+            console.log(`${technique.name} ${patch.length}`);
             console.log(JSON.stringify(patch));
+            const doc1copy = JSON.parse(JSON.stringify(test.doc1));
+            const patchResult = applyPatch(doc1copy, patch);
+            if (patchResult.length > 0 && patchResult[0].newDocument) {
+              expect(patchResult[0].newDocument).to.deep.eq(test.doc2);
+            } else {
+              expect(doc1copy).to.deep.eq(test.doc2);
+            }
             console.log();
           });
         });
