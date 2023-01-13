@@ -24,6 +24,18 @@ describe('diffDandy.compare.test', () => {
       doc2: {}
     },
     {
+      doc1: {a: 0},
+      doc2: {a: 1}
+    },
+    {
+      doc1: {a: 0},
+      doc2: {b: 0}
+    },
+    {
+      doc1: {a: 0, b: 1},
+      doc2: {c: {a: 0, b: 1}}
+    },
+    {
       doc1: {a: [1]},
       doc2: {a: []}
     },
@@ -62,6 +74,10 @@ describe('diffDandy.compare.test', () => {
     {
       doc1: [2, 0, 2, 3, 3, 0, 0, 1, 0, 3],
       doc2: [0, 1, 2, 2, 3, 0, 2, 1, 1, 2]
+    },
+    {
+      doc1: ['A', 'D', 'A', 'A', 'A', 'B', 'D', 'C', 'C', 'B'],
+      doc2: ['D', 'B', 'D', 'A', 'A', 'D', 'D', 'A', 'A', 'D']
     }
   ];
   tests.forEach(test =>
