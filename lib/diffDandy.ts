@@ -55,6 +55,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
       // Trees have matching contents and paths; nothing to do.
       return {recurse: false};
     } else {
+      // Do literals (optional, but it could cause excessive copying otherwise).
       if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean' ||
           value === null) {
         if (JsonPointer.has(working, pointer)) {
