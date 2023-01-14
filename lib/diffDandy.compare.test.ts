@@ -21,8 +21,8 @@ type Test = {
 describe('diffDandy.compare.test', () => {
   const tests: Test[] = [
     {
-      doc1: {a: 'b'},
-      doc2: {}
+      doc1: {},
+      doc2: {a: 0},
     },
     {
       doc1: {a: 0},
@@ -51,6 +51,10 @@ describe('diffDandy.compare.test', () => {
     {
       doc1: [{a: 0, b: 0}],
       doc2: [{a: 0, b: 1}]
+    },
+    {
+      doc1: [],
+      doc2: [0]
     },
     {
       doc1: [1],
