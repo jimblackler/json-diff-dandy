@@ -76,6 +76,11 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
         }
         return {recurse: false};
       }
+
+      if (!JsonPointer.has(working, pointer)) {
+        registerOperation({op: 'add', path: pointer, value});
+      }
+
       return {recurse: true};
     }
   });
