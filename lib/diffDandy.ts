@@ -60,17 +60,6 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
       // Trees have matching contents and paths; nothing to do.
       return {recurse: false};
     } else {
-      // Do literals (optional, but it could cause excessive copying otherwise).
-      if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean' ||
-          value === null) {
-        if (JsonPointer.has(working, path)) {
-          registerOperation({op: 'replace', path, value});
-        } else {
-          registerOperation({op: 'add', path, value});
-        }
-        return {recurse: false};
-      }
-
       // Can we copy/move something from the working document?
       const located = locateMatch(working, value, path_);
       if (located) {
@@ -84,7 +73,12 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
         return {recurse: false};
       }
 
-      if (!JsonPointer.has(working, path)) {
+      if (JsonPointer.has(working, path)) {
+        if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean' ||
+            value === null) {
+          registerOperation({op: 'replace', path, value});
+        }
+      } else {
         registerOperation({op: 'add', path, value});
       }
 
