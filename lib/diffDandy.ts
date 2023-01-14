@@ -30,9 +30,14 @@ function visitAll<T>(
   }
 }
 
-export function locateMatch(tree: JSONValue, value: JSONValue) {
+function isPrefix<T>(a: T[], b: T[]) {
+  return a.every((value, index) => value === b[index]);
+}
+
+export function locateMatch(tree: JSONValue, value: JSONValue, excluding: string[]) {
   return visitAll(tree,
-      (path, value1) => isEqual(value, value1) ? {result: path, recurse: false} : {recurse: true});
+      (path, value1) => !isPrefix(path, excluding) && isEqual(value, value1) ?
+          {result: path, recurse: false} : {recurse: true});
 }
 
 export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation[] {
@@ -67,10 +72,11 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
       }
 
       // Can we copy/move something from the working document?
-      const located = locateMatch(working, value);
+      const located = locateMatch(working, value, path_);
       if (located) {
         const from = JsonPointer.compile(located);
-        if (JsonPointer.has(target, from)) {
+        if (JsonPointer.has(target, from) && typeof target == 'object' && target !== null &&
+            isEqual(value, JsonPointer.get(target, from))) {
           registerOperation({op: 'copy', from, path});
         } else {
           registerOperation({op: 'move', from, path});
