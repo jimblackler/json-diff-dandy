@@ -57,7 +57,11 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
     } else {
       if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean' ||
           value === null) {
-        registerOperation({op: 'replace', path: pointer, value});
+        if (JsonPointer.has(working, pointer)) {
+          registerOperation({op: 'replace', path: pointer, value});
+        } else {
+          registerOperation({op: 'add', path: pointer, value});
+        }
         return {recurse: false};
       }
 
