@@ -47,9 +47,9 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
     operations.push(operation);
   }
 
-  visitAll(target, (path, value) => {
-    const pointer = JsonPointer.compile(path);
-    if (JsonPointer.has(working, pointer) && isEqual(
+  visitAll(target, (path_, value) => {
+    const path = JsonPointer.compile(path_);
+    if (JsonPointer.has(working, path) && isEqual(
         typeof working === 'object' && working !== null ? JsonPointer.get(working, path) : working,
         typeof target === 'object' && target !== null ? JsonPointer.get(target, path) : target)) {
       // Trees have matching contents and paths; nothing to do.
@@ -58,10 +58,10 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
       // Do literals (optional, but it could cause excessive copying otherwise).
       if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean' ||
           value === null) {
-        if (JsonPointer.has(working, pointer)) {
-          registerOperation({op: 'replace', path: pointer, value});
+        if (JsonPointer.has(working, path)) {
+          registerOperation({op: 'replace', path, value});
         } else {
-          registerOperation({op: 'add', path: pointer, value});
+          registerOperation({op: 'add', path, value});
         }
         return {recurse: false};
       }
@@ -69,17 +69,17 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
       // Can we copy/move something from the working document?
       const located = locateMatch(working, value);
       if (located) {
-        const fromPointer = JsonPointer.compile(located);
-        if (JsonPointer.has(target, fromPointer)) {
-          registerOperation({op: 'copy', from: fromPointer, path: pointer});
+        const from = JsonPointer.compile(located);
+        if (JsonPointer.has(target, from)) {
+          registerOperation({op: 'copy', from, path});
         } else {
-          registerOperation({op: 'move', from: fromPointer, path: pointer});
+          registerOperation({op: 'move', from, path});
         }
         return {recurse: false};
       }
 
-      if (!JsonPointer.has(working, pointer)) {
-        registerOperation({op: 'add', path: pointer, value});
+      if (!JsonPointer.has(working, path)) {
+        registerOperation({op: 'add', path, value});
       }
 
       return {recurse: true};
