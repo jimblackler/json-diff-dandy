@@ -30,6 +30,10 @@ describe('diffDandy.compare.test', () => {
     },
     {
       doc1: {a: 0},
+      doc2: {a: 0, b: {a: 0}}
+    },
+    {
+      doc1: {a: 0},
       doc2: {b: 0}
     },
     {
