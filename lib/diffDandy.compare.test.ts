@@ -4,6 +4,7 @@ import {default as diff0} from 'json-patch-gen';
 import {diff as diff1} from 'json8-patch';
 import {createPatch} from 'rfc6902';
 import {assertNotNull} from './check/null';
+import {diff} from './diffDandy';
 import {JSONPatchOperation, JSONValue} from './jsonTypes';
 
 const jiff = require('jiff');
@@ -93,6 +94,7 @@ describe('diffDandy.compare.test', () => {
   tests2.forEach(test =>
       describe(`${JSON.stringify(test.doc1)} -> ${JSON.stringify(test.doc2)}`, () => {
         const techniques: Technique[] = [
+          {name: 'diffDandy', getDiff: (a, b) => diff(a, b)},
           {name: 'JSON8', getDiff: (a, b) => diff1(a, b)},
           {name: 'rfc6902', getDiff: (a, b) => createPatch(a, b)},
           {name: 'fast-json-patch', getDiff: (a, b) => compare(assertNotNull(a), assertNotNull(b))},
