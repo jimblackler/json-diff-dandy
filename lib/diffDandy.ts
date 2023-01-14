@@ -3,7 +3,7 @@ import JsonPointer from 'json-pointer';
 import isEqual from 'lodash.isequal';
 import {JSONPatchOperation, JSONValue} from './jsonTypes';
 
-function visitAll<T>(
+export function visitAll<T>(
     obj: JSONValue,
     visitor: (path: string[], value: JSONValue) => { recurse: boolean, result?: T }): T | undefined {
   const result = visitor([], obj);
@@ -81,7 +81,6 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
       } else {
         registerOperation({op: 'add', path, value});
       }
-
       return {recurse: true};
     }
   });

@@ -4,7 +4,7 @@ import {default as diff0} from 'json-patch-gen';
 import {diff as diff1} from 'json8-patch';
 import {createPatch} from 'rfc6902';
 import {assertNotNull} from './check/null';
-import {diff} from './diffDandy';
+import {diff, visitAll} from './diffDandy';
 import {JSONPatchOperation, JSONValue} from './jsonTypes';
 
 const jiff = require('jiff');
@@ -18,6 +18,21 @@ type Test = {
   doc1: JSONValue;
   doc2: JSONValue;
 };
+
+function score(patch: JSONPatchOperation[]) {
+  let score = 0;
+  patch.forEach(operation => {
+    if (!('value' in operation)) {
+      return;
+    }
+
+    visitAll(operation.value, () => {
+      score++;
+      return {recurse: true}
+    });
+  });
+  return score;
+}
 
 describe('diffDandy.compare.test', () => {
   const tests: Test[] = [
@@ -70,6 +85,10 @@ describe('diffDandy.compare.test', () => {
       doc2: [0]
     },
     {
+      doc1: [0],
+      doc2: [0, 0]
+    },
+    {
       doc1: [1],
       doc2: [0, 1]
     },
@@ -119,7 +138,7 @@ describe('diffDandy.compare.test', () => {
         techniques.forEach(technique => {
           it(technique.name, () => {
             const patch = technique.getDiff(test.doc1, test.doc2);
-            console.log(`${technique.name} ${patch.length}`);
+            console.log(`${technique.name} ${score(patch)}`);
             console.log(JSON.stringify(patch));
             const doc1copy = JSON.parse(JSON.stringify(test.doc1));
             const patchResult = applyPatch(doc1copy, patch);
