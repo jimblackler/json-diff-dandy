@@ -138,7 +138,7 @@ describe('diffDandy.compare.test', () => {
         techniques.forEach(technique => {
           it(technique.name, () => {
             const patch = technique.getDiff(test.doc1, test.doc2);
-            console.log(`${technique.name} ${score(patch)}`);
+            console.log(`${technique.name} ${score(patch)} ${patch.length}`);
             console.log(JSON.stringify(patch));
             const doc1copy = JSON.parse(JSON.stringify(test.doc1));
             const patchResult = applyPatch(doc1copy, patch);
