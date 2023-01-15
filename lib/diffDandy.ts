@@ -78,7 +78,8 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
         if (Array.isArray(value) && typeof working === 'object' && working !== null) {
           const existing = JsonPointer.get(working, path);
           if (Array.isArray(existing)) {
-            const sequence = [...fastCommonSequence((a, b) => existing[a] === value[b], existing.length, value.length)];
+            const sequence = [...fastCommonSequence(
+                (a, b) => isEqual(existing[a], value[b]), existing.length, value.length)];
             let sequencePosition = 0;
             let insertPoint = 0;
             for (let idx = 0; idx !== value.length; idx++) {
