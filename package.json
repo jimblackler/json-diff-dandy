@@ -11,18 +11,20 @@
     "test": "mocha"
   },
   "dependencies": {
+    "fast-json-patch": "^3.1.1",
+    "heap": "^0.2.7",
     "json-pointer": "^0.6.2",
     "lodash.isequal": "^4.5.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",
+    "@types/heap": "^0.2.31",
     "@types/json-patch-gen": "^1.0.0",
     "@types/json-pointer": "^1.0.31",
     "@types/json8-patch": "^1.0.1",
     "@types/lodash.isequal": "^4.5.6",
     "@types/mocha": "^10.0.1",
     "chai": "^4.3.7",
-    "fast-json-patch": "^3.1.1",
     "jiff": "^0.7.3",
     "json-patch-gen": "^1.0.2",
     "json8-patch": "^1.0.6",

@@ -1,6 +1,7 @@
 import {applyPatch} from 'fast-json-patch';
 import JsonPointer from 'json-pointer';
 import isEqual from 'lodash.isequal';
+import {fastCommonSequence} from './fastCommonSequence';
 import {JSONPatchOperation, JSONValue} from './jsonTypes';
 
 export function visitAll<T>(
@@ -74,7 +75,46 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
       }
 
       if (JsonPointer.has(working, path)) {
-        if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean' ||
+        if (Array.isArray(value) && typeof working === 'object' && working !== null) {
+          const existing = JsonPointer.get(working, path);
+          if (Array.isArray(existing)) {
+            const sequence = [...fastCommonSequence((a, b) => existing[a] === value[b], existing.length, value.length)];
+            let sequencePosition = 0;
+            let insertPoint = 0;
+            for (let idx = 0; idx !== value.length; idx++) {
+              if (sequencePosition === sequence.length || idx < sequence[sequencePosition][1]) {
+                registerOperation({
+                  op: 'add',
+                  path: JsonPointer.compile([...path_, insertPoint.toString()]),
+                  value: value[idx]
+                });
+                sequence.forEach(pair => {
+                  if (pair[0] >= insertPoint) {
+                    pair[0]++;
+                  }
+                });
+                insertPoint++;
+              } else {
+                insertPoint = sequence[sequencePosition][0] + 1;
+                sequencePosition++;
+              }
+            }
+            let existingIdx = 0;
+            let valueIdx = 0;
+            while (existingIdx < existing.length) {
+              if (isEqual(value[valueIdx], existing[existingIdx])) {
+                valueIdx++;
+                existingIdx++;
+              } else {
+                registerOperation({
+                  op: 'remove',
+                  path: JsonPointer.compile([...path_, existingIdx.toString()])
+                });
+              }
+            }
+            return {recurse: false};
+          }
+        } else if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean' ||
             value === null) {
           registerOperation({op: 'replace', path, value});
         }
