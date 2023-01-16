@@ -92,7 +92,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                   let sequenceNumber2 = sequenceNumber;
                   let huntIdx = existingIdx + 1;
                   while (huntIdx < existing.length) {
-                    if (sequence[sequenceNumber2][0] == huntIdx) {
+                    if (sequence[sequenceNumber2][0] === huntIdx) {
                       sequenceNumber2++;
                     } else if (isEqual(existing[huntIdx], value[existingIdx])) {
                       break;
