@@ -88,11 +88,35 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
               while (existingIdx < sequence[sequenceNumber][1]) {
                 // Insert any missing content.
                 if (!isEqual(existing[existingIdx], value[existingIdx])) {
-                  registerOperation({
-                    op: 'add',
-                    path: JsonPointer.compile([...path_, existingIdx.toString()]),
-                    value: value[existingIdx]
-                  });
+                  // Is there a (non-common sequence) entry we can move forward?
+                  let sequenceNumber2 = sequenceNumber;
+                  let huntIdx = existingIdx + 1;
+                  while (huntIdx < existing.length) {
+                    if (sequence[sequenceNumber2][0] == huntIdx) {
+                      sequenceNumber2++;
+                    } else if (isEqual(existing[huntIdx], value[existingIdx])) {
+                      break;
+                    }
+                    huntIdx++;
+                  }
+                  if (huntIdx < existing.length) {
+                    registerOperation({
+                      op: 'move',
+                      from: JsonPointer.compile([...path_, huntIdx.toString()]),
+                      path: JsonPointer.compile([...path_, existingIdx.toString()])
+                    });
+                    sequence.forEach(pair => {
+                      if (pair[0] > huntIdx) {
+                        pair[0]--;
+                      }
+                    });
+                  } else {
+                    registerOperation({
+                      op: 'add',
+                      path: JsonPointer.compile([...path_, existingIdx.toString()]),
+                      value: value[existingIdx]
+                    });
+                  }
                   sequence.forEach(pair => {
                     if (pair[0] >= existingIdx) {
                       pair[0]++;
