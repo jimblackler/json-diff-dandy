@@ -89,8 +89,24 @@ describe('diffDandy.compare.test', () => {
       doc2: [0, 0]
     },
     {
+      doc1: [0],
+      doc2: [0, 1]
+    },
+    {
+      doc1: [0],
+      doc2: [1, 0]
+    },
+    {
+      doc1: [0],
+      doc2: [1, 0, 2]
+    },
+    {
       doc1: [1],
       doc2: [0, 1]
+    },
+    {
+      doc1: [0, 1],
+      doc2: [1, 2]
     },
     {
       doc1: [1, 2],
@@ -142,7 +158,7 @@ describe('diffDandy.compare.test', () => {
             console.log(JSON.stringify(patch));
             const doc1copy = JSON.parse(JSON.stringify(test.doc1));
             const patchResult = applyPatch(doc1copy, patch);
-            if (patchResult.length > 0 && patchResult[0].newDocument) {
+            if (patchResult.length > 0 && patchResult[0].newDocument !== undefined) {
               expect(patchResult[0].newDocument).to.deep.eq(test.doc2);
             } else {
               expect(doc1copy).to.deep.eq(test.doc2);
