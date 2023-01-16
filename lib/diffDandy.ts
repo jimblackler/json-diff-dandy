@@ -142,15 +142,48 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
 
               while (existingIdx < sequence[sequenceNumber][0]) {
                 // Remove any extra content.
-                registerOperation({
-                  op: 'remove',
-                  path: JsonPointer.compile([...path_, existingIdx.toString()])
-                });
-                sequence.forEach(pair => {
-                  if (pair[0] > existingIdx) {
-                    pair[0]--;
+                // Should push back?
+                let sequenceNumber2 = sequenceNumber;
+                let huntIdx = existingIdx + 1;
+                while (huntIdx < value.length) {
+                  if (sequence[sequenceNumber2][1] == huntIdx) {
+                    sequenceNumber2++;
+                  } else if (isEqual(existing[existingIdx], value[huntIdx])) {
+                    break;
                   }
-                });
+                  huntIdx++;
+                }
+
+                if (huntIdx < value.length) {
+                  const insertPoint0 = sequence[sequenceNumber2][0];
+                  const insertPoint1 = sequence[sequenceNumber2][1];
+                  registerOperation({
+                    op: 'move',
+                    from: JsonPointer.compile([...path_, existingIdx.toString()]),
+                    path: JsonPointer.compile([...path_, insertPoint0.toString()])
+                  });
+                  sequence.splice(sequenceNumber2, 0, [insertPoint0, insertPoint1]);
+                  sequence.forEach(pair => {
+                    if (pair[0] > existingIdx) {
+                      pair[0]--;
+                    }
+                  });
+                  sequence.forEach(pair => {
+                    if (pair[0] >= insertPoint0) {
+                      pair[0]++;
+                    }
+                  });
+                } else {
+                  registerOperation({
+                    op: 'remove',
+                    path: JsonPointer.compile([...path_, existingIdx.toString()])
+                  });
+                  sequence.forEach(pair => {
+                    if (pair[0] > existingIdx) {
+                      pair[0]--;
+                    }
+                  });
+                }
               }
 
               sequenceNumber++;
