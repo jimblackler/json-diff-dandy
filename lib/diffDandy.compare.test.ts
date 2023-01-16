@@ -176,7 +176,7 @@ describe('diffDandy.compare.test', () => {
 
 describe('diffDandy.arrays.test', () => {
   const random = Alea(1);
-  const tests3: Test[] = [];
+  const tests3 = new Set<string>();
 
   function randomList(max: number) {
     const output: number[] = [];
@@ -189,12 +189,14 @@ describe('diffDandy.arrays.test', () => {
     }
   }
 
-  for (let idx = 0; idx !== 5; idx++) {
-    tests3.push({
+   while(tests3.size < 50) {
+    const test: Test = {
       doc1: randomList(3),
       doc2: randomList(3)
-    });
+    };
+    tests3.add(JSON.stringify(test));
   }
-
-  tests3.forEach(standardTest);
+  const tests3l = Array.from(tests3);
+  tests3l.sort((a, b) => a.length - b.length);
+  tests3l.map(json => JSON.parse(json)).forEach(standardTest);
 });
