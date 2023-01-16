@@ -78,39 +78,77 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
         if (Array.isArray(value) && typeof working === 'object' && working !== null) {
           const existing = JsonPointer.get(working, path);
           if (Array.isArray(existing)) {
-            const sequence = [...fastCommonSequence(
-                (a, b) => isEqual(existing[a], value[b]), existing.length, value.length)];
-            let sequencePosition = 0;
-            let insertPoint = 0;
-            for (let idx = 0; idx !== value.length; idx++) {
-              if (sequencePosition === sequence.length || idx < sequence[sequencePosition][1]) {
-                registerOperation({
-                  op: 'add',
-                  path: JsonPointer.compile([...path_, insertPoint.toString()]),
-                  value: value[idx]
-                });
-                sequence.forEach(pair => {
-                  if (pair[0] >= insertPoint) {
-                    pair[0]++;
-                  }
-                });
-                insertPoint++;
-              } else {
-                insertPoint = sequence[sequencePosition][0] + 1;
-                sequencePosition++;
-              }
-            }
+            const sequence = Array.from(fastCommonSequence(
+                (a, b) => isEqual(existing[a], value[b]), existing.length, value.length));
+
             let existingIdx = 0;
-            let valueIdx = 0;
-            while (existingIdx < existing.length) {
-              if (isEqual(value[valueIdx], existing[existingIdx])) {
-                valueIdx++;
-                existingIdx++;
+            let sequenceNumber = 0;
+            while (existingIdx < value.length || existingIdx < existing.length) {
+              if (sequenceNumber === sequence.length) {
+                // Have passed the end of the common sequence.
+
+                while (existingIdx < value.length) {
+                  // Insert any missing content.
+                  if (!isEqual(existing[existingIdx], value[existingIdx])) {
+                    registerOperation({
+                      op: 'add',
+                      path: JsonPointer.compile([...path_, existingIdx.toString()]),
+                      value: value[existingIdx]
+                    });
+                    sequence.forEach(pair => {
+                      if (pair[0] >= existingIdx) {
+                        pair[0]++;
+                      }
+                    });
+                  }
+                  existingIdx++;
+                }
+
+                while (existingIdx < existing.length) {
+                  // Remove any extra content.
+                  registerOperation({
+                    op: 'remove',
+                    path: JsonPointer.compile([...path_, existingIdx.toString()])
+                  });
+                  sequence.forEach(pair => {
+                    if (pair[0] > existingIdx) {
+                      pair[0]--;
+                    }
+                  });
+                }
               } else {
-                registerOperation({
-                  op: 'remove',
-                  path: JsonPointer.compile([...path_, existingIdx.toString()])
-                });
+                // Reached a common sequence.
+                while (existingIdx < sequence[sequenceNumber][1]) {
+                  // Insert any missing content.
+                  if (!isEqual(existing[existingIdx], value[existingIdx])) {
+                    registerOperation({
+                      op: 'add',
+                      path: JsonPointer.compile([...path_, existingIdx.toString()]),
+                      value: value[existingIdx]
+                    });
+                    sequence.forEach(pair => {
+                      if (pair[0] >= existingIdx) {
+                        pair[0]++;
+                      }
+                    });
+                  }
+                  existingIdx++;
+                }
+
+                while (existingIdx < sequence[sequenceNumber][0]) {
+                  // Remove any extra content.
+                  registerOperation({
+                    op: 'remove',
+                    path: JsonPointer.compile([...path_, existingIdx.toString()])
+                  });
+                  sequence.forEach(pair => {
+                    if (pair[0] > existingIdx) {
+                      pair[0]--;
+                    }
+                  });
+                }
+
+                sequenceNumber++;
               }
             }
             return {recurse: false};

@@ -5,8 +5,7 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "strict": true,
-    "esModuleInterop": true,
-    "target": "ES2015"
+    "esModuleInterop": true
   },
   "exclude": [
     "dist",
