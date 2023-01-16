@@ -84,6 +84,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
             let existingIdx = 0;
             let sequenceNumber = 0;
             while (sequenceNumber < sequence.length) {
+
               while (existingIdx < sequence[sequenceNumber][1]) {
                 // Insert any missing content.
                 if (!isEqual(existing[existingIdx], value[existingIdx])) {
