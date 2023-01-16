@@ -38,7 +38,7 @@ describe('diffDandy.compare.test', () => {
   const tests: Test[] = [
     {
       doc1: {},
-      doc2: {a: 0},
+      doc2: {a: 0}
     },
     {
       doc1: {a: 0},
