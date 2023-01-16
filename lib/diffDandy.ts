@@ -110,18 +110,32 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                         pair[0]--;
                       }
                     });
-                  } else {
-                    registerOperation({
-                      op: 'add',
-                      path: JsonPointer.compile([...path_, existingIdx.toString()]),
-                      value: value[existingIdx]
+                    sequence.forEach(pair => {
+                      if (pair[0] >= existingIdx) {
+                        pair[0]++;
+                      }
                     });
-                  }
-                  sequence.forEach(pair => {
-                    if (pair[0] >= existingIdx) {
-                      pair[0]++;
+                  } else {
+                    if (existingIdx + 1 < sequence[sequenceNumber][0]) {
+                      // Can use replace.
+                      registerOperation({
+                        op: 'replace',
+                        path: JsonPointer.compile([...path_, existingIdx.toString()]),
+                        value: value[existingIdx]
+                      });
+                    } else {
+                      registerOperation({
+                        op: 'add',
+                        path: JsonPointer.compile([...path_, existingIdx.toString()]),
+                        value: value[existingIdx]
+                      });
+                      sequence.forEach(pair => {
+                        if (pair[0] >= existingIdx) {
+                          pair[0]++;
+                        }
+                      });
                     }
-                  });
+                  }
                 }
                 existingIdx++;
               }
