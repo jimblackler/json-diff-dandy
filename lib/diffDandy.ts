@@ -146,7 +146,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                 let sequenceNumber2 = sequenceNumber;
                 let huntIdx = existingIdx + 1;
                 while (huntIdx < value.length) {
-                  if (sequence[sequenceNumber2][1] == huntIdx) {
+                  if (sequence[sequenceNumber2][1] === huntIdx) {
                     sequenceNumber2++;
                   } else if (isEqual(existing[existingIdx], value[huntIdx])) {
                     break;
