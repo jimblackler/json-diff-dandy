@@ -116,7 +116,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                       }
                     });
                   } else {
-                    if (existingIdx + 1 < sequence[sequenceNumber][0]) {
+                    if (existingIdx < sequence[sequenceNumber][0]) {
                       // Can use replace.
                       registerOperation({
                         op: 'replace',
