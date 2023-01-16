@@ -198,5 +198,24 @@ describe('diffDandy.arrays.test', () => {
   }
   const tests3l = Array.from(tests3);
   tests3l.sort((a, b) => a.length - b.length);
-  tests3l.map(json => JSON.parse(json)).forEach(standardTest);
+  tests3l.map(json => JSON.parse(json)).forEach(function (test: Test) {
+    it(`${JSON.stringify(test.doc1)} -> ${JSON.stringify(test.doc2)}`, () => {
+      console.log('diffDandy');
+      const diffDandy = diff(test.doc1, test.doc2);
+      console.log(JSON.stringify(diffDandy));
+      console.log('rfc6902');
+      const rfc6902 = createPatch(test.doc1, test.doc2);
+      console.log(JSON.stringify(rfc6902));
+      const doc1copy = JSON.parse(JSON.stringify(test.doc1));
+      const patchResult = applyPatch(doc1copy, diffDandy);
+      if (patchResult.length > 0 && patchResult[0].newDocument !== undefined) {
+        expect(patchResult[0].newDocument).to.deep.eq(test.doc2);
+      } else {
+        expect(doc1copy).to.deep.eq(test.doc2);
+      }
+      expect(score(diffDandy)).is.lessThanOrEqual(score(rfc6902));
+      expect(diffDandy.length).is.lessThanOrEqual(rfc6902.length);
+      console.log();
+    });
+  });
 });
