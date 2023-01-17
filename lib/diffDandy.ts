@@ -82,18 +82,18 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                 (a, b) => isEqual(existing[a], value[b]), existing.length, value.length));
             sequence.push([existing.length, value.length]);
             let existingIdx = 0;
-            let sequenceNumber = 0;
-            while (sequenceNumber < sequence.length) {
+            let pairNumber = 0;
+            while (pairNumber < sequence.length) {
 
-              while (existingIdx < sequence[sequenceNumber][1]) {
+              while (existingIdx < sequence[pairNumber][1]) {
                 // Insert any missing content.
                 if (!isEqual(existing[existingIdx], value[existingIdx])) {
                   // Is there a (non-common sequence) entry we can move forward?
-                  let sequenceNumber2 = sequenceNumber;
+                  let pairNumber2 = pairNumber + 1;
                   let huntIdx = existingIdx + 1;
                   while (huntIdx < existing.length) {
-                    if (sequence[sequenceNumber2][0] === huntIdx) {
-                      sequenceNumber2++;
+                    if (pairNumber2 !== sequence.length && sequence[pairNumber2][0] === huntIdx) {
+                      pairNumber2++;
                     } else if (isEqual(existing[huntIdx], value[existingIdx])) {
                       break;
                     }
@@ -116,7 +116,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                       }
                     });
                   } else {
-                    if (existingIdx < sequence[sequenceNumber][0]) {
+                    if (existingIdx < sequence[pairNumber][0]) {
                       // Can use replace.
                       registerOperation({
                         op: 'replace',
@@ -140,40 +140,27 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                 existingIdx++;
               }
 
-              while (existingIdx < sequence[sequenceNumber][0]) {
+              while (existingIdx < sequence[pairNumber][0]) {
                 // Remove any extra content.
                 // Should push back?
-                let sequenceNumber2 = sequenceNumber + 1;
-                let huntIdx = existingIdx + 1;
-                while (huntIdx < value.length) {
-                  if (sequence[sequenceNumber2][1] === huntIdx) {
-                    sequenceNumber2++;
-                  } else if (isEqual(existing[existingIdx], value[huntIdx])) {
-                    break;
+                function hunt() {
+                  if (!Array.isArray(value)) {
+                    throw new Error();
                   }
-                  huntIdx++;
+                  for (let afterSequence = pairNumber; afterSequence !== sequence.length - 1;
+                       afterSequence++) {
+                    for (let huntIdx = sequence[afterSequence][1] + 1;
+                         huntIdx !== sequence[afterSequence + 1][1]; huntIdx++) {
+                      if (isEqual(existing[existingIdx], value[huntIdx])) {
+                        return afterSequence;
+                      }
+                    }
+                  }
+                  return undefined;
                 }
 
-                if (huntIdx < value.length) {
-                  const insertPoint0 = sequence[sequenceNumber2][0];
-                  const insertPoint1 = sequence[sequenceNumber2][1];
-                  registerOperation({
-                    op: 'move',
-                    from: JsonPointer.compile([...path_, existingIdx.toString()]),
-                    path: JsonPointer.compile([...path_, insertPoint0.toString()])
-                  });
-                  sequence.splice(sequenceNumber2, 0, [insertPoint0, insertPoint1]);
-                  sequence.forEach(pair => {
-                    if (pair[0] > existingIdx) {
-                      pair[0]--;
-                    }
-                  });
-                  sequence.forEach(pair => {
-                    if (pair[0] >= insertPoint0) {
-                      pair[0]++;
-                    }
-                  });
-                } else {
+                const afterSequence = hunt();
+                if (afterSequence === undefined) {
                   registerOperation({
                     op: 'remove',
                     path: JsonPointer.compile([...path_, existingIdx.toString()])
@@ -183,10 +170,25 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                       pair[0]--;
                     }
                   });
+                } else {
+                  const insertPoint0 = sequence[afterSequence][0];
+                  registerOperation({
+                    op: 'move',
+                    from: JsonPointer.compile([...path_, existingIdx.toString()]),
+                    path: JsonPointer.compile([...path_, insertPoint0.toString()])
+                  });
+                  sequence.forEach(pair => {
+                    if (pair[0] > existingIdx) {
+                      pair[0]--;
+                    }
+                    if (pair[0] >= insertPoint0) {
+                      pair[0]++;
+                    }
+                  });
                 }
               }
 
-              sequenceNumber++;
+              pairNumber++;
             }
             return {recurse: false};
           }
