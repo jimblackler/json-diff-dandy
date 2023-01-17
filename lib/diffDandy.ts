@@ -116,7 +116,19 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                       }
                     });
                   } else {
-                    if (existingIdx < sequence[pairNumber][0]) {
+                    const exists = existing.findIndex(v => isEqual(v, value[existingIdx]));
+                    if (exists !== -1) {
+                      registerOperation({
+                        op: 'copy',
+                        from: JsonPointer.compile([...path_, exists.toString()]),
+                        path: JsonPointer.compile([...path_, existingIdx.toString()]),
+                      });
+                      sequence.forEach(pair => {
+                        if (pair[0] >= existingIdx) {
+                          pair[0]++;
+                        }
+                      });
+                    } else if (existingIdx < sequence[pairNumber][0]) {
                       // Can use replace.
                       registerOperation({
                         op: 'replace',
