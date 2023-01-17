@@ -200,6 +200,8 @@ describe('diffDandy.arrays.test', () => {
   tests3l.sort((a, b) => a.length - b.length);
   tests3l.map(json => JSON.parse(json)).forEach(function (test: Test) {
     it(`${JSON.stringify(test.doc1)} -> ${JSON.stringify(test.doc2)}`, () => {
+      console.log(test);
+      console.log();
       console.log('diffDandy');
       const diffDandy = diff(test.doc1, test.doc2);
       console.log(JSON.stringify(diffDandy));
