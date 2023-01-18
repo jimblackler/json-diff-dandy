@@ -185,7 +185,6 @@ describe('diffDandy.compare.test', () => {
   tests2.forEach(standardTest);
 });
 
-
 describe('diffDandy.arrays.test', () => {
   const random = Alea(1);
   const tests3 = new Set<string>();
