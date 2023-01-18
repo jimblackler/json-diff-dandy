@@ -73,10 +73,6 @@ function standardTest(test: Test) {
 describe('diffDandy.compare.test', () => {
   const tests: Test[] = [
     {
-      doc1: 0,
-      doc2: 1
-    },
-    {
       doc1: [],
       doc2: {}
     },
@@ -127,6 +123,14 @@ describe('diffDandy.compare.test', () => {
     {
       doc1: [],
       doc2: [0]
+    },
+    {
+      doc1: [0],
+      doc2: 0
+    },
+    {
+      doc1: 0,
+      doc2: 1
     },
     {
       doc1: [0],
