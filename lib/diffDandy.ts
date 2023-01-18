@@ -41,6 +41,16 @@ export function locateMatch(tree: JSONValue, value: JSONValue, excluding: string
           {result: path, recurse: false} : {recurse: true});
 }
 
+function get(value:JSONValue, path: string) {
+  if (typeof value === 'object' && value !== null) {
+    return JsonPointer.get(value, path) as JSONValue;
+  }
+  if (path.length) {
+    throw new Error();
+  }
+  return value;
+}
+
 export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation[] {
   let working: JSONValue = JSON.parse(JSON.stringify(original));
   const operations: JSONPatchOperation[] = [];
@@ -55,9 +65,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
 
   visitAll(target, (path_, value) => {
     const path = JsonPointer.compile(path_);
-    if (JsonPointer.has(working, path) && isEqual(
-        typeof working === 'object' && working !== null ? JsonPointer.get(working, path) : working,
-        typeof target === 'object' && target !== null ? JsonPointer.get(target, path) : target)) {
+    if (JsonPointer.has(working, path) && isEqual(get(working, path), get(target,path))) {
       // Trees have matching contents and paths; nothing to do.
       return {recurse: false};
     } else {
@@ -66,7 +74,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
       if (located) {
         const from = JsonPointer.compile(located);
         if (JsonPointer.has(target, from) && typeof target == 'object' && target !== null &&
-            isEqual(value, JsonPointer.get(target, from))) {
+            isEqual(value, get(target, from))) {
           registerOperation({op: 'copy', from, path});
         } else {
           registerOperation({op: 'move', from, path});
@@ -75,137 +83,134 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
       }
 
       if (JsonPointer.has(working, path)) {
-        if (Array.isArray(value) && typeof working === 'object' && working !== null) {
-          const existing = JsonPointer.get(working, path);
-          if (Array.isArray(existing)) {
-            const sequence = Array.from(fastCommonSequence(
-                (a, b) => isEqual(existing[a], value[b]), existing.length, value.length));
-            sequence.push([existing.length, value.length]);
-            let existingIdx = 0;
-            let pairNumber = 0;
-            while (pairNumber < sequence.length) {
+        const existing = get(working, path);
+        if (Array.isArray(existing) && Array.isArray(value)) {
+          const sequence = Array.from(fastCommonSequence(
+              (a, b) => isEqual(existing[a], value[b]), existing.length, value.length));
+          sequence.push([existing.length, value.length]);
+          let existingIdx = 0;
+          let pairNumber = 0;
+          while (pairNumber < sequence.length) {
 
-              while (existingIdx < sequence[pairNumber][1]) {
-                // Insert any missing content.
-                if (!isEqual(existing[existingIdx], value[existingIdx])) {
-                  // Is there a (non-common sequence) entry we can move forward?
-                  let pairNumber2 = pairNumber + 1;
-                  let huntIdx = existingIdx + 1;
-                  while (huntIdx < existing.length) {
-                    if (pairNumber2 !== sequence.length && sequence[pairNumber2][0] === huntIdx) {
-                      pairNumber2++;
-                    } else if (isEqual(existing[huntIdx], value[existingIdx])) {
-                      break;
-                    }
-                    huntIdx++;
+            while (existingIdx < sequence[pairNumber][1]) {
+              // Insert any missing content.
+              if (!isEqual(existing[existingIdx], value[existingIdx])) {
+                // Is there a (non-common sequence) entry we can move forward?
+                let pairNumber2 = pairNumber + 1;
+                let huntIdx = existingIdx + 1;
+                while (huntIdx < existing.length) {
+                  if (pairNumber2 !== sequence.length && sequence[pairNumber2][0] === huntIdx) {
+                    pairNumber2++;
+                  } else if (isEqual(existing[huntIdx], value[existingIdx])) {
+                    break;
                   }
-                  if (huntIdx < existing.length) {
+                  huntIdx++;
+                }
+                if (huntIdx < existing.length) {
+                  registerOperation({
+                    op: 'move',
+                    from: JsonPointer.compile([...path_, huntIdx.toString()]),
+                    path: JsonPointer.compile([...path_, existingIdx.toString()])
+                  });
+                  sequence.forEach(pair => {
+                    if (pair[0] > huntIdx) {
+                      pair[0]--;
+                    }
+                  });
+                  sequence.forEach(pair => {
+                    if (pair[0] >= existingIdx) {
+                      pair[0]++;
+                    }
+                  });
+                } else {
+                  const exists = existing.findIndex(v => isEqual(v, value[existingIdx]));
+                  if (exists !== -1) {
                     registerOperation({
-                      op: 'move',
-                      from: JsonPointer.compile([...path_, huntIdx.toString()]),
-                      path: JsonPointer.compile([...path_, existingIdx.toString()])
-                    });
-                    sequence.forEach(pair => {
-                      if (pair[0] > huntIdx) {
-                        pair[0]--;
-                      }
+                      op: 'copy',
+                      from: JsonPointer.compile([...path_, exists.toString()]),
+                      path: JsonPointer.compile([...path_, existingIdx.toString()]),
                     });
                     sequence.forEach(pair => {
                       if (pair[0] >= existingIdx) {
                         pair[0]++;
                       }
                     });
+                  } else if (existingIdx < sequence[pairNumber][0]) {
+                    // Can use replace.
+                    registerOperation({
+                      op: 'replace',
+                      path: JsonPointer.compile([...path_, existingIdx.toString()]),
+                      value: value[existingIdx]
+                    });
                   } else {
-                    const exists = existing.findIndex(v => isEqual(v, value[existingIdx]));
-                    if (exists !== -1) {
-                      registerOperation({
-                        op: 'copy',
-                        from: JsonPointer.compile([...path_, exists.toString()]),
-                        path: JsonPointer.compile([...path_, existingIdx.toString()]),
-                      });
-                      sequence.forEach(pair => {
-                        if (pair[0] >= existingIdx) {
-                          pair[0]++;
-                        }
-                      });
-                    } else if (existingIdx < sequence[pairNumber][0]) {
-                      // Can use replace.
-                      registerOperation({
-                        op: 'replace',
-                        path: JsonPointer.compile([...path_, existingIdx.toString()]),
-                        value: value[existingIdx]
-                      });
-                    } else {
-                      registerOperation({
-                        op: 'add',
-                        path: JsonPointer.compile([...path_, existingIdx.toString()]),
-                        value: value[existingIdx]
-                      });
-                      sequence.forEach(pair => {
-                        if (pair[0] >= existingIdx) {
-                          pair[0]++;
-                        }
-                      });
-                    }
-                  }
-                }
-                existingIdx++;
-              }
-
-              while (existingIdx < sequence[pairNumber][0]) {
-                // Remove any extra content.
-                // Should push back?
-                const hunt = () => {
-                  if (!Array.isArray(value)) {
-                    throw new Error();
-                  }
-                  for (let afterSequence = pairNumber; afterSequence !== sequence.length - 1;
-                       afterSequence++) {
-                    for (let huntIdx = sequence[afterSequence][1] + 1;
-                         huntIdx !== sequence[afterSequence + 1][1]; huntIdx++) {
-                      if (isEqual(existing[existingIdx], value[huntIdx])) {
-                        return afterSequence;
+                    registerOperation({
+                      op: 'add',
+                      path: JsonPointer.compile([...path_, existingIdx.toString()]),
+                      value: value[existingIdx]
+                    });
+                    sequence.forEach(pair => {
+                      if (pair[0] >= existingIdx) {
+                        pair[0]++;
                       }
-                    }
+                    });
                   }
-                  return undefined;
-                };
-
-                const afterSequence = hunt();
-                if (afterSequence === undefined) {
-                  registerOperation({
-                    op: 'remove',
-                    path: JsonPointer.compile([...path_, existingIdx.toString()])
-                  });
-                  sequence.forEach(pair => {
-                    if (pair[0] > existingIdx) {
-                      pair[0]--;
-                    }
-                  });
-                } else {
-                  const insertPoint0 = sequence[afterSequence][0];
-                  registerOperation({
-                    op: 'move',
-                    from: JsonPointer.compile([...path_, existingIdx.toString()]),
-                    path: JsonPointer.compile([...path_, insertPoint0.toString()])
-                  });
-                  sequence.forEach(pair => {
-                    if (pair[0] > existingIdx) {
-                      pair[0]--;
-                    }
-                    if (pair[0] >= insertPoint0) {
-                      pair[0]++;
-                    }
-                  });
                 }
               }
-
-              pairNumber++;
+              existingIdx++;
             }
-            return {recurse: false};
+
+            while (existingIdx < sequence[pairNumber][0]) {
+              // Remove any extra content.
+              // Should push back?
+              const hunt = () => {
+                if (!Array.isArray(value)) {
+                  throw new Error();
+                }
+                for (let afterSequence = pairNumber; afterSequence !== sequence.length - 1;
+                     afterSequence++) {
+                  for (let huntIdx = sequence[afterSequence][1] + 1;
+                       huntIdx !== sequence[afterSequence + 1][1]; huntIdx++) {
+                    if (isEqual(existing[existingIdx], value[huntIdx])) {
+                      return afterSequence;
+                    }
+                  }
+                }
+                return undefined;
+              };
+
+              const afterSequence = hunt();
+              if (afterSequence === undefined) {
+                registerOperation({
+                  op: 'remove',
+                  path: JsonPointer.compile([...path_, existingIdx.toString()])
+                });
+                sequence.forEach(pair => {
+                  if (pair[0] > existingIdx) {
+                    pair[0]--;
+                  }
+                });
+              } else {
+                const insertPoint0 = sequence[afterSequence][0];
+                registerOperation({
+                  op: 'move',
+                  from: JsonPointer.compile([...path_, existingIdx.toString()]),
+                  path: JsonPointer.compile([...path_, insertPoint0.toString()])
+                });
+                sequence.forEach(pair => {
+                  if (pair[0] > existingIdx) {
+                    pair[0]--;
+                  }
+                  if (pair[0] >= insertPoint0) {
+                    pair[0]++;
+                  }
+                });
+              }
+            }
+
+            pairNumber++;
           }
-        } else if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean' ||
-            value === null) {
+          return {recurse: false};
+        } else {
           registerOperation({op: 'replace', path, value});
         }
       } else {
