@@ -73,6 +73,14 @@ function standardTest(test: Test) {
 describe('diffDandy.compare.test', () => {
   const tests: Test[] = [
     {
+      doc1: 0,
+      doc2: 1
+    },
+    {
+      doc1: [],
+      doc2: {}
+    },
+    {
       doc1: {},
       doc2: {a: 0}
     },
@@ -189,10 +197,10 @@ describe('diffDandy.arrays.test', () => {
     }
   }
 
-   while(tests3.size < 50) {
+  while (tests3.size < 5000) {
     const test: Test = {
-      doc1: randomList(3),
-      doc2: randomList(3)
+      doc1: randomList(5),
+      doc2: randomList(5)
     };
     tests3.add(JSON.stringify(test));
   }
