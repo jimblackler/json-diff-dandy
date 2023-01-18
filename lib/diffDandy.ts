@@ -57,7 +57,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
 
   function registerOperation(operation: JSONPatchOperation) {
     const patchResult = applyPatch(working, [operation]);
-    if (patchResult.length && patchResult[0].newDocument) {
+    if (patchResult.length && patchResult[0].newDocument !== undefined) {
       working = patchResult[0].newDocument;
     }
     operations.push(operation);
