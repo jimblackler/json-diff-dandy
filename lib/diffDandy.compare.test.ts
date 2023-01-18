@@ -134,6 +134,10 @@ describe('diffDandy.compare.test', () => {
     },
     {
       doc1: [0],
+      doc2: 0
+    },
+    {
+      doc1: [0],
       doc2: [0, 0]
     },
     {
@@ -167,6 +171,14 @@ describe('diffDandy.compare.test', () => {
     {
       doc1: [1, 2, 3],
       doc2: [0, 1, 2]
+    },
+    {
+      doc1: [[], []],
+      doc2: [[0], [0]]
+    },
+    {
+      doc1: [[0], []],
+      doc2: [[0], [0]]
     },
     {
       doc1: [0, 1, 2, 3, 3, 2, 3, 0, 0, 0],
