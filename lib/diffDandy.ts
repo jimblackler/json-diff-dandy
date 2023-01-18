@@ -1,6 +1,7 @@
 import {applyPatch} from 'fast-json-patch';
 import JsonPointer from 'json-pointer';
 import isEqual from 'lodash.isequal';
+import {assertArray} from './check/array';
 import {fastCommonSequence} from './fastCommonSequence';
 import {JSONPatchOperation, JSONValue} from './jsonTypes';
 
@@ -56,9 +57,13 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
   const operations: JSONPatchOperation[] = [];
 
   function registerOperation(operation: JSONPatchOperation) {
-    const patchResult = applyPatch(working, [operation]);
-    if (patchResult.length && patchResult[0].newDocument !== undefined) {
-      working = patchResult[0].newDocument;
+    const patchResult = applyPatch(working, [operation], true, false);
+    const newDocument = patchResult[0].newDocument;
+    if (patchResult.length && newDocument !== undefined) {
+      if (isEqual(working, newDocument)) {
+        throw new Error();
+      }
+      working = newDocument;
     }
     operations.push(operation);
   }
@@ -83,10 +88,10 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
       }
 
       if (JsonPointer.has(working, path)) {
-        const existing = get(working, path);
+        let existing = get(working, path);
         if (Array.isArray(existing) && Array.isArray(value)) {
           const sequence = Array.from(fastCommonSequence(
-              (a, b) => isEqual(existing[a], value[b]), existing.length, value.length));
+              (a, b) => isEqual(assertArray(existing)[a], value[b]), existing.length, value.length));
           sequence.push([existing.length, value.length]);
           let existingIdx = 0;
           let pairNumber = 0;
@@ -155,6 +160,10 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                     });
                   }
                 }
+                existing = get(working, path);
+                if (!Array.isArray(existing)) {
+                  throw new Error();
+                }
               }
               existingIdx++;
             }
@@ -163,7 +172,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
               // Remove any extra content.
               // Should push back?
               const hunt = () => {
-                if (!Array.isArray(value)) {
+                if (!Array.isArray(value) || !Array.isArray(existing)) {
                   throw new Error();
                 }
                 for (let afterSequence = pairNumber; afterSequence !== sequence.length - 1;
@@ -204,6 +213,10 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                     pair[0]++;
                   }
                 });
+              }
+              existing = get(working, path);
+              if (!Array.isArray(existing)) {
+                throw new Error();
               }
             }
 
