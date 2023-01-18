@@ -155,7 +155,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
               while (existingIdx < sequence[pairNumber][0]) {
                 // Remove any extra content.
                 // Should push back?
-                function hunt() {
+                const hunt = () => {
                   if (!Array.isArray(value)) {
                     throw new Error();
                   }
@@ -169,7 +169,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                     }
                   }
                   return undefined;
-                }
+                };
 
                 const afterSequence = hunt();
                 if (afterSequence === undefined) {
