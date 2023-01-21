@@ -57,12 +57,9 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
   const operations: JSONPatchOperation[] = [];
 
   function registerOperation(operation: JSONPatchOperation) {
-    const patchResult = applyPatch(working, [operation], true, false);
+    const patchResult = applyPatch(working, [operation], true, true);
     const newDocument = patchResult[0].newDocument;
-    if (patchResult.length && newDocument !== undefined) {
-      if (isEqual(working, newDocument)) {
-        throw new Error();
-      }
+    if (patchResult.length && newDocument !== working) {
       working = newDocument;
     }
     operations.push(operation);
@@ -88,7 +85,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
       }
 
       if (JsonPointer.has(working, path)) {
-        let existing = get(working, path);
+        const existing = get(working, path);
         if (Array.isArray(existing) && Array.isArray(value)) {
           const sequence = Array.from(fastCommonSequence(
               (a, b) => isEqual(assertArray(existing)[a], value[b]), existing.length, value.length));
@@ -160,7 +157,6 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                     });
                   }
                 }
-                existing = get(working, path);
                 if (!Array.isArray(existing)) {
                   throw new Error();
                 }
@@ -214,7 +210,6 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                   }
                 });
               }
-              existing = get(working, path);
               if (!Array.isArray(existing)) {
                 throw new Error();
               }
