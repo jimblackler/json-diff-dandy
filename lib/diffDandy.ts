@@ -2,7 +2,7 @@ import {applyPatch} from 'fast-json-patch';
 import JsonPointer from 'json-pointer';
 import isEqual from 'lodash.isequal';
 import {assertArray} from './check/array';
-import {fastCommonSequence} from './fastCommonSequence';
+import {fastCommonSequence} from 'fast-common-sequence';
 import {JSONPatchOperation, JSONValue} from './jsonTypes';
 
 export function visitAll<T>(
