@@ -25,6 +25,10 @@ export function visitAll<T>(
     }
   } else {
     for (const [key, value] of Object.entries(obj)) {
+      if (value === undefined) {
+        // 'undefined' not valid JSON. Ignore.
+        continue;
+      }
       const result0 = visitAll(value, (path, value) => visitor([key, ...path], value));
       if (result0 !== undefined) {
         return result0;
