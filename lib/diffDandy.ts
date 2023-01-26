@@ -219,6 +219,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
           }
           return {recurse: true};
         } else if (isJSONObject(value) && isJSONObject(existing)) {
+          // Leave to the recursion.
         } else {
           registerOperation({op: 'replace', path, value});
           return {recurse: false};
