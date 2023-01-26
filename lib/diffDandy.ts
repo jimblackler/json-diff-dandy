@@ -143,12 +143,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
                       }
                     });
                   } else if (existingIdx < sequence[pairNumber][0]) {
-                    // Can use replace.
-                    registerOperation({
-                      op: 'replace',
-                      path: JsonPointer.compile([...path_, existingIdx.toString()]),
-                      value: value[existingIdx]
-                    });
+                    // Leave to the recursion.
                   } else {
                     registerOperation({
                       op: 'add',
@@ -222,7 +217,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
 
             pairNumber++;
           }
-          return {recurse: false};
+          return {recurse: true};
         } else if (isJSONObject(value) && isJSONObject(existing)) {
         } else {
           registerOperation({op: 'replace', path, value});
