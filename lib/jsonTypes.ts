@@ -4,6 +4,10 @@ export type JSONObject = {
   [key: string]: JSONValue;
 };
 
+export function isJSONObject(value: JSONValue): value is JSONObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 export type JSONArray = JSONValue[];
 
 export type JSONPatchAdd = {

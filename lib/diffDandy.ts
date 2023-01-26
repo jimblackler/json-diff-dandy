@@ -3,7 +3,7 @@ import JsonPointer from 'json-pointer';
 import isEqual from 'lodash.isequal';
 import {assertArray} from './check/array';
 import {fastCommonSequence} from 'fast-common-sequence';
-import {JSONPatchOperation, JSONValue} from './jsonTypes';
+import {isJSONObject, JSONPatchOperation, JSONValue} from './jsonTypes';
 
 export function visitAll<T>(
     obj: JSONValue,
@@ -218,6 +218,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
             pairNumber++;
           }
           return {recurse: false};
+        } else if (isJSONObject(value) && isJSONObject(existing)) {
         } else {
           registerOperation({op: 'replace', path, value});
         }
