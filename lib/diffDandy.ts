@@ -42,7 +42,7 @@ export function locateMatch(tree: JSONValue, value: JSONValue, excluding: string
           {result: path, recurse: false} : {recurse: true});
 }
 
-function get(value:JSONValue, path: string) {
+function get(value: JSONValue, path: string) {
   if (typeof value === 'object' && value !== null) {
     return JsonPointer.get(value, path) as JSONValue;
   }
@@ -67,7 +67,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
 
   visitAll(target, (path_, value) => {
     const path = JsonPointer.compile(path_);
-    if (JsonPointer.has(working, path) && isEqual(get(working, path), get(target,path))) {
+    if (JsonPointer.has(working, path) && isEqual(get(working, path), get(target, path))) {
       // Trees have matching contents and paths; nothing to do.
       return {recurse: false};
     } else {
