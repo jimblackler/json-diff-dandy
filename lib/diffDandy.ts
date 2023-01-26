@@ -1,8 +1,8 @@
+import {fastCommonSequence} from 'fast-common-sequence';
 import {applyPatch} from 'fast-json-patch';
 import JsonPointer from 'json-pointer';
 import isEqual from 'lodash.isequal';
 import {assertArray} from './check/array';
-import {fastCommonSequence} from 'fast-common-sequence';
 import {isJSONObject, JSONPatchOperation, JSONValue} from './jsonTypes';
 
 export function visitAll<T>(
