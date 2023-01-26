@@ -17,7 +17,8 @@ export function visitAll<T>(
   }
   if (Array.isArray(obj)) {
     for (let index = 0; index !== obj.length; index++) {
-      const result0 = visitAll(obj[index], (path, value) => visitor([index.toString(), ...path], value));
+      const result0 = visitAll(obj[index],
+          (path, value) => visitor([index.toString(), ...path], value));
       if (result0 !== undefined) {
         return result0;
       }
@@ -88,7 +89,8 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
         const existing = get(working, path);
         if (Array.isArray(existing) && Array.isArray(value)) {
           const sequence = Array.from(fastCommonSequence(
-              (a, b) => isEqual(assertArray(existing)[a], value[b]), existing.length, value.length));
+              (a, b) => isEqual(assertArray(existing)[a], value[b]),
+              existing.length, value.length));
           sequence.push([existing.length, value.length]);
           let existingIdx = 0;
           let pairNumber = 0;
