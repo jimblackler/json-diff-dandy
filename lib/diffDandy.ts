@@ -223,6 +223,7 @@ export function diff(original: JSONValue, target: JSONValue): JSONPatchOperation
         } else if (isJSONObject(value) && isJSONObject(existing)) {
         } else {
           registerOperation({op: 'replace', path, value});
+          return {recurse: false};
         }
       } else {
         registerOperation({op: 'add', path, value});
