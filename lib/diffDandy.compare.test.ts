@@ -35,41 +35,6 @@ function score(patch: JSONPatchOperation[]) {
   return score;
 }
 
-function standardTest(test: Test) {
-  describe(`${JSON.stringify(test.doc1)} -> ${JSON.stringify(test.doc2)}`, () => {
-    const techniques: Technique[] = [
-      {name: 'diffDandy', getDiff: (a, b) => diff(a, b)},
-      {name: 'rfc6902', getDiff: (a, b) => createPatch(a, b)},
-      {name: 'JSON8', getDiff: (a, b) => diff1(a, b)},
-      {name: 'fast-json-patch', getDiff: (a, b) => compare(assertNotNull(a), assertNotNull(b))},
-      {name: 'jiff', getDiff: (a, b) => jiff.diff(a, b, undefined)},
-      {
-        name: 'json-patch-gen', getDiff: (a, b) => {
-          if (typeof a === 'object' && typeof b === 'object') {
-            return diff0(a, b);
-          }
-          return null;
-        }
-      }
-    ];
-    techniques.forEach(technique => {
-      it(technique.name, () => {
-        const patch = technique.getDiff(test.doc1, test.doc2);
-        console.log(`${technique.name} ${score(patch)} ${patch.length}`);
-        console.log(JSON.stringify(patch));
-        const doc1copy = JSON.parse(JSON.stringify(test.doc1));
-        const patchResult = applyPatch(doc1copy, patch);
-        if (patchResult.length > 0 && patchResult[0].newDocument !== undefined) {
-          expect(patchResult[0].newDocument).to.deep.eq(test.doc2);
-        } else {
-          expect(doc1copy).to.deep.eq(test.doc2);
-        }
-        console.log();
-      });
-    });
-  });
-}
-
 describe('diffDandy.compare.test', () => {
   const tests: Test[] = [
     {
@@ -194,7 +159,40 @@ describe('diffDandy.compare.test', () => {
     }
   ];
   const tests2 = tests.map(test => [test, {doc1: test.doc2, doc2: test.doc1}]).flat();
-  tests2.forEach(standardTest);
+  tests2.forEach((test: Test) => {
+    describe(`${JSON.stringify(test.doc1)} -> ${JSON.stringify(test.doc2)}`, () => {
+      const techniques: Technique[] = [
+        {name: 'diffDandy', getDiff: (a, b) => diff(a, b)},
+        {name: 'rfc6902', getDiff: (a, b) => createPatch(a, b)},
+        {name: 'JSON8', getDiff: (a, b) => diff1(a, b)},
+        {name: 'fast-json-patch', getDiff: (a, b) => compare(assertNotNull(a), assertNotNull(b))},
+        {name: 'jiff', getDiff: (a, b) => jiff.diff(a, b, undefined)},
+        {
+          name: 'json-patch-gen', getDiff: (a, b) => {
+            if (typeof a === 'object' && typeof b === 'object') {
+              return diff0(a, b);
+            }
+            return null;
+          }
+        }
+      ];
+      techniques.forEach(technique => {
+        it(technique.name, () => {
+          const patch = technique.getDiff(test.doc1, test.doc2);
+          console.log(`${technique.name} ${score(patch)} ${patch.length}`);
+          console.log(JSON.stringify(patch));
+          const doc1copy = JSON.parse(JSON.stringify(test.doc1));
+          const patchResult = applyPatch(doc1copy, patch);
+          if (patchResult.length > 0 && patchResult[0].newDocument !== undefined) {
+            expect(patchResult[0].newDocument).to.deep.eq(test.doc2);
+          } else {
+            expect(doc1copy).to.deep.eq(test.doc2);
+          }
+          console.log();
+        });
+      });
+    });
+  });
 });
 
 describe('diffDandy.arrays.test', () => {
