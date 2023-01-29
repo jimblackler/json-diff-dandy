@@ -1,7 +1,7 @@
 {
   "name": "json-diff-dandy",
   "description": "An RFC 6902 JSON Patch generator and tests that compare alternative patch libraries",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "jimblackler@gmail.com",
   "license": "Apache-2.0",
   "main": "dist/index.js",
